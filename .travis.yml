@@ -3,4 +3,4 @@ sudo: false
 dart:
   - stable
   - dev
-script: pub run test
+script: pub run test && dartanalyzer lib/*.dart
