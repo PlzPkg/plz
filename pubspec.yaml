@@ -1,0 +1,4 @@
+name: plz
+description: A universal package manager
+dev_dependencies:
+  test: "^0.12.4+7"
