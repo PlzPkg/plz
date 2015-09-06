@@ -1,0 +1,15 @@
+{
+  "name": "plz",
+  "version": "1.0.0",
+  "description": "A universal package manager",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PlzPkg/plz.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/PlzPkg/plz/issues"
+  },
+  "homepage": "https://github.com/PlzPkg/plz#readme",
+  "bin": "./bin/plz.js"
+}
