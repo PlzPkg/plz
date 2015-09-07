@@ -32,6 +32,10 @@ class InitCommand extends Command {
   InitCommand(this.plz);
 
   run() async {
+    if (plz.node) {
+      await js.loadLibrary();
+    }
+
     var stdout = await getStdOut();
 
     stdout.write("name: ");
@@ -43,7 +47,6 @@ class InitCommand extends Command {
 
   getStdOut() async {
     if (plz.node) {
-      await js.loadLibrary();
       return new NodeStdOut();
     }
     return stdout;
