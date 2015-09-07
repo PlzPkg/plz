@@ -36,10 +36,8 @@ class InitCommand extends Command {
 
     stdout.write("name: ");
     var name = await readLineFromStdIn();
-    print("name was: $name");
     stdout.write("version: ");
     var version = await readLineFromStdIn();
-    print("version: $version");
     await plz.init("plz.yaml", name, version);
   }
 
