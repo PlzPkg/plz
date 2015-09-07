@@ -3,18 +3,23 @@
 import "package:args/command_runner.dart";
 import "package:plz/plz_lib.dart";
 import "dart:io";
-import "dart:js";
+import "dart:js" deferred as js;
 import "dart:async";
 import "dart:convert";
-import "package:node_io/io.dart" as nio;
-import "package:node_io/util.dart" as niou;
 
 main(List<String> args) {
-  Plz plz = new Plz();
+
+  var runArgs = args;
+  var node = false;
+  if (args.isNotEmpty && args.first == "--node") {
+    node = true;
+    runArgs = args.sublist(1);
+  }
+  Plz plz = new Plz(node: node);
 
   new CommandRunner("plz", "A universal package manager")
   ..addCommand(new InitCommand(plz))
-  ..run(args);
+  ..run(runArgs);
 }
 
 class InitCommand extends Command {
@@ -27,7 +32,7 @@ class InitCommand extends Command {
   InitCommand(this.plz);
 
   run() async {
-    var stdout = getStdOut();
+    var stdout = await getStdOut();
 
     stdout.write("name: ");
     var name = await readLineFromStdIn();
@@ -35,11 +40,12 @@ class InitCommand extends Command {
     stdout.write("version: ");
     var version = await readLineFromStdIn();
     print("version: $version");
-//    plz.init("plz.yaml", name, version);
+    await plz.init("plz.yaml", name, version);
   }
 
-  getStdOut() {
-    if (isNode()) {
+  getStdOut() async {
+    if (plz.node) {
+      await js.loadLibrary();
       return new NodeStdOut();
     }
     return stdout;
@@ -47,8 +53,8 @@ class InitCommand extends Command {
 
   Future<String> readLineFromStdIn() {
     Completer<String> completer = new Completer();
-    if (isNode()) {
-      var stdin = context["process"]["stdin"];
+    if (plz.node) {
+      var stdin = js.context["process"]["stdin"];
       stdin.callMethod("setEncoding", ['utf8']);
 
       var readableCallback = () {
@@ -64,251 +70,10 @@ class InitCommand extends Command {
   }
 }
 
-class NodeStdIn implements Stdin {
-
-  String readLineSync({Encoding encoding: SYSTEM_ENCODING,
-                      bool retainNewlines: false}) {
-    print("in readLineSync");
-    print("require: ${niou.require}");
-    var readline = niou.require('readline');
-    print("readline: $readline");
-
-    var input = context["process"]["stdin"];
-    print("input: $input");
-
-    var output = context["process"]["stdout"];
-    print("output: $output");
-
-    var rl = readline.callMethod("createInterface", [{
-      "input": input,
-      "output": output,
-      "terminal": false
-    }]);
-    print("rl: $rl");
-
-
-    var callback = new JsFunction.withThis((cmd) {
-      print('You just typed: '+cmd);
-    });
-
-    rl.callMethod('on', ['line', callback]);
-    return "";
-  }
-
-  Future<List> get last {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> distinct([bool equals(List previous, List next)]) {
-    throw new Exception("not implemented");
-  }
-
-
-  void set lineMode(bool enabled) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<List> elementAt(int index) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> take(int count) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future drain([futureValue]) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<Set<List>> toSet() {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream asyncMap(convert(List event)) {
-    throw new Exception("not implemented");
-  }
-
-
-  bool get echoMode {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<bool> every(bool test(List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> handleError(Function onError, {bool test(error)}) {
-    throw new Exception("not implemented");
-  }
-
-
-  void set echoMode(bool enabled) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> takeWhile(bool test(List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<List<List>> toList() {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<int> get length {
-    throw new Exception("not implemented");
-  }
-
-
-  StreamSubscription<List<int>> listen(void onData(List<int> event), {Function onError, void onDone(), bool cancelOnError}) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream timeout(Duration timeLimit, {void onTimeout(EventSink sink)}) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<List> singleWhere(bool test(List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<dynamic> lastWhere(bool test(List element), {Object defaultValue()}) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<List> get single {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<List> get first {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> skipWhile(bool test(List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<bool> get isEmpty {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<bool> any(bool test(List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<bool> contains(Object needle) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<String> join([String separator = ""]) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future fold(initialValue, combine(previous, List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<List> reduce(List combine(List previous, List element)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream expand(Iterable convert(List value)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream asyncExpand(Stream convert(List event)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream map(convert(List event)) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> asBroadcastStream({void onListen(StreamSubscription<List> subscription), void onCancel(StreamSubscription<List> subscription)}) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List<int>> _stream() {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> where(bool test(List event)) {
-    throw new Exception("not implemented");
-  }
-
-
-  int readByteSync() {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream transform(StreamTransformer<List, dynamic> streamTransformer) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future pipe(StreamConsumer<List> streamConsumer) {
-    throw new Exception("not implemented");
-  }
-
-
-  bool get isBroadcast {
-    throw new Exception("not implemented");
-  }
-
-
-  bool get lineMode {
-    throw new Exception("not implemented");
-  }
-
-
-  Future<dynamic> firstWhere(bool test(List element), {Object defaultValue()}) {
-    throw new Exception("not implemented");
-  }
-
-
-  Stream<List> skip(int count) {
-    throw new Exception("not implemented");
-  }
-
-
-  Future forEach(void action(List element)) {
-    throw new Exception("not implemented");
-  }
-}
-
 class NodeStdOut implements Stdout {
 
   void write(object) {
-    context["process"]["stdout"].callMethod("write", [object]);
+    js.context["process"]["stdout"].callMethod("write", [object]);
   }
 
   int _fd() {

@@ -1,16 +1,16 @@
 import "dart:io";
-import "package:node_io/io.dart" as nio;
-import "dart:js";
-
-isNode() {
-  return context["process"] != null;
-}
+import "dart:js" deferred as js;
 
 class Plz {
-  init(String fileName, String name, String version) {
+  final bool node;
+
+  Plz({this.node: false});
+
+  init(String fileName, String name, String version) async {
     var file;
-    if (isNode()) {
-      file = new nio.File(fileName);
+    if (node) {
+      await js.loadLibrary();
+      throw new Exception("Can't write files yet");
     } else {
       file = new File(fileName);
     }
