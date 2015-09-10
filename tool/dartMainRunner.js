@@ -9,5 +9,7 @@ function load(uri) {
     var fs = require("fs");
     var vm = require("vm");
     var contents = fs.readFileSync("bin/" + uri, {encoding: "utf8"});
-    vm.runInThisContext(contents);
+    eval(contents);
 }
+
+global.require = require;

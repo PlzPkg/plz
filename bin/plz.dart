@@ -34,15 +34,37 @@ class InitCommand extends Command {
   run() async {
     if (plz.node) {
       await js.loadLibrary();
+      var responses = [];
+      var prompts = ["name: ", "version: "];
+      var readline = js.context.callMethod("require", ['readline']);
+
+      var args = new js.JsObject(js.context['Object']);
+      args['input'] = js.context['process']['stdin'];
+      args['output'] = js.context['process']['stdout'];
+      args['terminal'] = false;
+
+      var rl = readline.callMethod('createInterface', [args]);
+
+      var lineCallback = (line) {
+        responses.add(line);
+        print("${responses.length} questions answered");
+        if (responses.length == prompts.length) {
+          print("writing file");
+          plz.init('plz.yaml', responses[0], responses[1]);
+        } else {
+          print("asking next question");
+          js.context["process"]["stdout"].callMethod("write", [prompts[responses.length]]);
+        }
+      };
+      rl.callMethod('on', ['line', lineCallback]);
+      js.context["process"]["stdout"].callMethod("write", [prompts[0]]);
+    } else {
+      stdout.write("name: ");
+      var name = stdin.readLineSync();
+      stdout.write("version: ");
+      var version = stdin.readLineSync();
+      await plz.init("plz.yaml", name, version);
     }
-
-    var stdout = await getStdOut();
-
-    stdout.write("name: ");
-    var name = await readLineFromStdIn();
-    stdout.write("version: ");
-    var version = await readLineFromStdIn();
-    await plz.init("plz.yaml", name, version);
   }
 
   getStdOut() async {
@@ -63,6 +85,17 @@ class InitCommand extends Command {
         completer.complete(chunk);
       };
       stdin.callMethod("once", ['readable', readableCallback]);
+    } else {
+      var line = stdin.readLineSync();
+      completer.complete(line);
+    }
+    return completer.future;
+  }
+
+  Future<String> readLineFromStdIn2() {
+    Completer<String> completer = new Completer();
+    if (plz.node) {
+
     } else {
       var line = stdin.readLineSync();
       completer.complete(line);
